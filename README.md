@@ -1,22 +1,20 @@
-![image](https://user-images.githubusercontent.com/100783805/178174658-b394e63d-d224-41fc-9e4e-3bbac8edabfd.png)
+<img src= "images/banner.png" width="930" height="178">
 
-# __OptyX__
+**Contained within this repo is a collection of approaches for forecasting the CBOE VIX for the purposes of improving future market volatility forecasts.** 
 
-The proprietary OptyX technology implements machine learning as a means of predicting the percent profit or loss of a weekly call option's contract at two days until expiration using option contract variables (present call option price, strike price, underlying asset price, the Greeks, implied volatility, and volume), along with VIX prices, inflation percent, and various sentiment metrics. 
+The CBOE VIX is a real-time index that represents the market’s expectations for the relative strength of near-term price changes or future volatility of the S&P 500 Index (SPX), which is considered the leading indicator of the broad U.S. stock market. Being a forward-looking index, it is constructed using the implied volatilities on S&P 500 index options (SPX options). 
 
-The predicted profit or loss, the 'y' outcome, is classified into the following three classes: 
+Volatility, or how fast prices change, is often seen as a way to gauge market sentiment, and in particular the degree of fear among market participants. Having the ability to guage this sentiment in advance allows insight into the timing of indicators and assists traders in enhancing long-term fundamentals to better execute their market entries.  
 
-    - '0': a loss of a contract's value greater than 30%, which constitutes a "Sell to Open" recommendation
-    - '1': a change in a contract's value between -30% and 25%, which constitutes a "Pass" recommendation
-    - '2': a gain in a contract's value greater than 25%, which constitutes a "Buy to Open" recommendation.
+Volatility forecasts are used for risk management, alpha (risk) trading, and the reduction of trading friction.
 
 ---
 
 ## __README.md Overview__
 
-This README.md serves as a blueprint for navigating the entire OptyX repo. Included here is an explanation of the data gathering process for all OptyX data, relevent to both PART 1 and PART 2 of the OptyX project. Please note, *additional README.md files contained within __'Part1'__ and __'Part2'__ folders will provide further clarification for their respective folder.*
+This README.md serves as a blueprint for navigating the entire repo. Additionally, included here is an explanation of the data gathering process for all data, relevant to Parts 1, 2, and 3, as well as a summation of the study's findings for Part 1. 
 
-The following instructions will guide the user through the process of installing necessary libraries and running the applicable Jupyter notebooks, as well as provide a step-by-step explanation of the code's usage. 
+The following instructions will guide the user through the process of installing necessary libraries and running the applicable Jupyter notebooks, as well as provide a step-by-step explanation of the code's usage and results.
 
 ---
 
@@ -37,65 +35,117 @@ Within this environment, install the above listed dependencies. To do so, in you
 
 ---
 
-## __Disclaimer__
-
-Within the OptyX repo, the reader will notice numerous versions of notebooks and csv files. Provided OptyX is presently in development, these files remain at this time for record keeping purposes. 
-
----
-
 ## __Data Gathering__ 
 
-Please see **SPY_21Q4_22Q1_V2.ipynb** (contained within the same folder that this README.md file is contained in).
+Please navigate to the **Data Prep** folder to review the following notebooks:
 
-Data for SPY option contracts (e.g. Strike Price, SPY Price, Greeks, Expiration, Call Last Price, etc.) as well as VIX data was directly pulled from [optionsDx](https://www.optionsdx.com/). This website provides a suite of historical options information. 
+***Macro_Data_2017-22_Prep.ipynb***:
 
-At present, the data relevent to this repo spans a six month period from October 2021 (Q4) to March 2022 (Q1).
+* Various macroeconomic data was pulled from [FRED](https://fred.stlouisfed.org/) for a period spanning January 2017 (Q1) through June 2022 (Q2). For a complete review of all data pulled, please consult the **VIXbyOptyxFinal.pdf** presentation in the Presentation folder, pages 6-7.
 
-The data was downloaded in the form of text files, with each month of data being a separate file, and then converted into Pandas DataFrames and further filtered. Once the data was formatted accordingly, each month's DataFrame was concatenated into one large dataset. 
+* Each set of marcroeconomic data was coverted into a Pandas DataFrame and formatted. 
 
-This option contract dataset for the six month period was then merged with VIX, Sentiment metrics, and Inflation (determined according to MoM increase, replicated over a month to populate all rows). Together, this combined set of data comprised the features used in the machine learning models. Please consult the __'Sentiment Analysis'__ section below for further details regarding the Sentiment Analysis portion of the OptyX project.
+* All macroeconomic DataFrames were then merged together along with 30-minute VIX data (pulled from [optionsDx](https://www.optionsdx.com/).
 
-Here is some additional insight into the data gathering and filtering process:
+* Together, this dataset comprises the features used in all LSTM models that contain macroeconomic data (detailed below). 
 
-- The options data was in 30 minute increments.
-- There were over 9 million rows before data cleaning. 
-- Post-data cleaning and filtering, approximately 35K rows remained.
-- For the purpose of the initial OptyX model, the focus was exclusively call contracts. With call contracts only, three trade scenarios per a single move of the underlying asset are possible, whereas the inclusion of puts would add another, near inverse dimension.
+***SPX_VIX_30min_2017-22_Prep.ipynb***:
 
-Features data insight:
+* Thirty-minute call and put data for SPX option contracts (e.g. Strike Price, SPX Price, Greeks, Expiration, Bid, Ask, etc.) from January 2017 (Q1) through June 2022 (Q2) was directly pulled from [optionsDx](https://www.optionsdx.com/) and downloaded in the form of text files, with each month of data being a separate file. 
 
-- Strikes were filtered within -$3 to +$15 of SPY price to accumulate larger moves.
-- Expiration Dates were filtered to include only weekly contracts (contracts expiring the same week, Monday-Friday).
-- The max hold period was defined at 2.0DTE (Wednesday close) in order to permit studying of the rapid change of greeks and their effect on the contract.
-- The Strike Distance formula was calculated to depict negative values for ITM contracts.
+* Each month was then converted into Pandas DataFrames and further filtered. 
 
-Target variable insight:
+* Once the data was formatted accordingly, each month from 2017-2019 was concatenated into one large dataset for this period and likewise each month from 2020-2022 was concatenated into one large dataset for this period. Note, the periods 2017-2019 and 2020-2022 were initially processed separately from each other due to the large file sizes. 
 
-- ROI % of a contract was calculated, a preliminary step enabling the calculation of 'y'.
-- The target variable, 'y' (classes of percent profit/loss of a contract's value) was defined according to the following criteria: 
-    - '0': a loss of a contract's value greater than 30%, which constitutes a "Sell to Open" recommendation
-    - '1': a change in a contract's value between -30% and 25%, which constitutes a "Pass" recommendation
-    - '2': a gain in a contract's value greater than 25%, which constitutes a "Buy to Open" recommendation.
+* Each period was then further filtered according to the following criteria in order to create a subset of the most liquid options:
 
----
+- *All options, at any given point in time, must satisfy the following:*
 
-## __Sentiment Analysis__ 
+  -   *Expiration date between 27 and 32 days in the future*
+  -   *Bid and ask greater than $0.0*
+  -   *Strikes within .4% of spot at beginning of day*
 
-Please refer to the folder titled __'Sentiment'__ and the Jupyter notebook __'sentiment-Copy9.ipynb.'__ 
 
-The goal was to track market sentiment as reflected in tweets from Twitter. Tracking search words “S&P 500" and "stocks”, over 30,000 tweets were pulled. Tweets were collected into a Pandas DataFrame, cleaned, and fed into the NLTK Vader Model, a sentiment analysis tool that is specifically attuned to sentiments expressed in social media. Each tweet passed through the model and was assigned a composite score from -1 (most negative sentiment) to +1 (most positive sentiment). The composite scores for each day were then averaged to obtain a number for daily market sentiment. 
+* Both periods were then concatinated.
+
+- Each contract is then weighted based on their impact on the VIX. For further explanation regarding this process, please consult the **VIXbyOptyxFinal.pdf** presentation in the Presentation folder, pages 15-18.
+
+  -   Every timestamp (30 min intervals) becomes a weighted average of ~10-20 contracts (E.g., the C_DELTA feature: consists of a weighted average of all call option contracts’ delta values based on their strike value’s impact on the VIX index.
+
+* This weighted, 30-minute SPX option contract dataset for the 5.5 year period is then merged with 30-minute VIX data (likewise directly pulled from [optionsDx](https://www.optionsdx.com/). Together, this dataset comprises the features used in all LSTM models that contain SPX-Options data (detailed below). 
 
 ---
 
-## __PART 1: Machine Learning__
+## __PART 1: Predicting VIX with Machine Learning__
 
-Please refer to the README.md within folder **'Part1'** for the machine learning aspect of the OptyX product. Provided instructions detailed in this README.md will guide the user through navigating and comprehending the machine learning aspect of OptyX technology.
+This section uses a multi-variate, multi-step LSTM model to predict how the VIX will evolve over time using 5.5 years of historical data (2017 through Q2 2022).
+
+For this project, three, five, and 20 day forecasts were made. Please note 20 days provided insufficient predictive power; results will not be discussed.
+
+***vix_lstm_V4.ipynb***:
+
+- This notebook contains the LSTM data preparation and model. This notebook was used to create the following models:
+
+  -  Macroeconomic-only features, predicting three days
+  -  Macroeconomic-only features, predicting five days
+  -  SPX Options-only features, predicting three days
+  -  SPX Options-only features, predicting five days
+  -  Permutations of macroeconomic and SPX Options features, predicting three days
+  -  Permutations of macroeconomic and SPX Options features, predicting five days
+
+- Please note, permutations of macroeconomic and SPX Options features, predicting both three and five days, vastly underperformed compared to their homogeneous componenents by themselves. Their results will not be discussed.
+
+- For details on the LSTM model architecture, please consult the **VIXbyOptyxFinal.pdf** presentation in the Presentation folder, page 19.
+
+***LSTM Results:***
+
+  -  Macroeconomic-only features, predicting three days: RMSE = 5.380
+
+  ![voila example.](images/1.png)
+
+  -  Macroeconomic-only features, predicting five days: RMSE = 5.520
+
+  ![voila example.](images/2.png)
+
+  -  SPX Options-only features, predicting three days: RMSE = 3.257
+
+  ![voila example.](images/3.png)
+
+  -  SPX Options-only features, predicting five days: RMSE = 3.957
+
+  ![voila example.](images/4.png)
 
 ---
 
-## __PART 2: Binomial Option Pricing Trees__
+## __PART 2: Monte Carlo and Facebook Prophet__
 
-Please refer to the README.md within the folder labeled, __'Part2'__, to learn about future developments for OptyX.
+Monte Carlo analysis was additionally performed to foreast the VIX for the first two weeks of August 2022. 
+
+Further, Facebook Prophet was likewise performed to foreast the VIX for six months starting August 1st, 2022 as well as the first two weeks in August 2022.
+
+Please consult the **VIXbyOptyxFinal.pdf** presentation in the Presentation folder, pages 22-25 for Monte Carlo and Facebook Prophet results.
+
+---
+
+## __PART 3: Scenario Forecasting__
+
+This folder consists of scenario foreasts for the VIX. The goal was to manipulate certain features for an LSTM time-series model as a means of simulating various scenarios. 
+
+For example, in Scenario A (one scenario of three included), to simulate a period of hyper-inflation alongside a pandemic, the following features were manipulated by scaling them in a step-wise fashion over select periods: 
+
+* Inflation
+
+* Equity Market Volatility Infectious Disease Tracker
+
+* VVIX
+
+Here are the three scenarios:
+
+  - A.) Forecasts a situation where a new aggresive virus broke out and had a downstream impact on supply chain flow. Explores the relationship when the Equity Market Volatility Infectious Disease Tracker is showing concerning numbers, and the supply chain stress indicator is signaling trouble, while economic policy is highly uncertain.
+
+  - B.) Explores the outcome if all currencies continue to rapidly devalue and cryptocurrency becomes the main currency in the world.
+
+  - C.) Explores a situation where the US is facing hyperinflation. Financial conditions are tight, unemployment is skyrocketing, the dollar is climbing while losing value against the EUR, and the Fed rate is at a never seen before level.
 
 ---
 
