@@ -12,9 +12,11 @@ Volatility forecasts are used for risk management, alpha (risk) trading, and the
 
 ## __README.md Overview__
 
-This README.md serves as a blueprint for navigating the entire repo. Additionally, included here is an explanation of the data gathering process for all data, relevant to Parts 1, 2, and 3, as well as a summation of the study's findings for Part 1. 
+This README serves as a blueprint for navigating the entire repo. Additionally, included here is an explanation of the data gathering process for all data, relevant to Parts 1, 2, and 3, as well as a summation of the study's findings for Part 1. 
 
 The following instructions will guide the user through the process of installing necessary libraries and running the applicable Jupyter notebooks, as well as provide a step-by-step explanation of the code's usage and results.
+
+Please note, this repo is a copy of an earlier version. Commits were made on the earlier version starting August 15th, 2022. A new repo was created August 27th in the interest of cohesion.
 
 ---
 
