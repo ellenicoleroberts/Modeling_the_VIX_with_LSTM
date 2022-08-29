@@ -47,7 +47,7 @@ Please navigate to the **Data Prep** folder to review the following notebooks:
 
 * Each set of marcroeconomic data was coverted into a Pandas DataFrame and formatted. 
 
-* All macroeconomic DataFrames were then merged together along with 30-minute VIX data (pulled from [optionsDx](https://www.optionsdx.com/).
+* All macroeconomic DataFrames were then merged together along with 30-minute VIX data (pulled from [optionsDx](https://www.optionsdx.com/)).
 
 * Together, this dataset comprises the features used in all LSTM models that contain macroeconomic data (detailed below). 
 
